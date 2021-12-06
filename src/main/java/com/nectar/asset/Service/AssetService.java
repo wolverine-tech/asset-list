@@ -41,8 +41,8 @@ public class AssetService {
 	public List<ThingDataBean> getAssetLatest(List<String> path, List<String> type) {
 		Map<String, String> queryFields = new HashMap<String, String>();
 		Map<String, String> filterFields = new HashMap<String, String>();
-		setQueryFields(SEARCH_TAG_IDS, path, queryFields);
-		setFilterFields(TYPE, type, filterFields);
+		setFilterFieldsAndQueryFields(SEARCH_TAG_IDS, path, queryFields);
+		setFilterFieldsAndQueryFields(TYPE, type, filterFields);
 		SolrQuery solrQuery = new SolrQuery();
 
 		solrQuery = setSolrQuery(queryFields, filterFields);
@@ -50,25 +50,25 @@ public class AssetService {
 		return getAssetLatestResponse(solrQuery);
 	}
 
-	private Map<String, String> setFilterFields(String field, List<String> sources, Map<String, String> filterFields) {
+	private Map<String, String> setFilterFieldsAndQueryFields(String field, List<String> sources, Map<String, String> filterFieldsOrqueryFields) {
 
 		if (!CollectionUtils.isEmpty(sources)) {
 
-			filterFields.put(field, field + sources.stream().collect(Collectors.joining("\"\"", ":(\"", "\")")));
+			filterFieldsOrqueryFields.put(field, field + sources.stream().collect(Collectors.joining("\"\"", ":(\"", "\")")));
 		}
-		return filterFields;
+		return filterFieldsOrqueryFields;
 
 	}
 
-	private Map<String, String> setQueryFields(String field, List<String> sources, Map<String, String> queryFields) {
-
-		if (!CollectionUtils.isEmpty(sources)) {
-
-			queryFields.put(field, field + sources.stream().collect(Collectors.joining("\"\"", ":(\"", "\")")));
-		}
-		return queryFields;
-
-	}
+//	private Map<String, String> setQueryFields(String field, List<String> sources, Map<String, String> queryFields) {
+//
+//		if (!CollectionUtils.isEmpty(sources)) {
+//
+//			queryFields.put(field, field + sources.stream().collect(Collectors.joining("\"\"", ":(\"", "\")")));
+//		}
+//		return queryFields;
+//
+//	}
 
 	private SolrQuery setSolrQuery(Map<String, String> queryFields, Map<String, String> filterFields) {
 
