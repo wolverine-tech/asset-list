@@ -60,15 +60,6 @@ public class AssetService {
 
 	}
 
-//	private Map<String, String> setQueryFields(String field, List<String> sources, Map<String, String> queryFields) {
-//
-//		if (!CollectionUtils.isEmpty(sources)) {
-//
-//			queryFields.put(field, field + sources.stream().collect(Collectors.joining("\"\"", ":(\"", "\")")));
-//		}
-//		return queryFields;
-//
-//	}
 
 	private SolrQuery setSolrQuery(Map<String, String> queryFields, Map<String, String> filterFields) {
 
