@@ -1,4 +1,4 @@
-package com.nectar.asset.ServiceImpl;
+package com.nectar.asset.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +22,12 @@ import com.nectar.honeycomb.solr.db.util.SolrUtil;
 import com.nectar.thing.beans.ThingDataBean;
 
 @Service
-public class AssetServiceImpl {
+public class AssetService {
 
 	public final String SEARCH_TAG_IDS = "searchTagIds";
 	public final String TYPE = "type";
 
-	private Logger LOGGER = LoggerFactory.getLogger(AssetServiceImpl.class);
+	private Logger LOGGER = LoggerFactory.getLogger(AssetService.class);
 
 	@Value("${honeycomb.asset.latest.solr.collection}")
 	private String solrCollecton;
