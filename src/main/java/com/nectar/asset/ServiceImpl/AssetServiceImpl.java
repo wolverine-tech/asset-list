@@ -2,69 +2,67 @@ package com.nectar.asset.ServiceImpl;
 
 
 
-import java.util.ArrayList;
+import static com.nectar.asset.dtos.SolrConstants.TYPE;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-
 import com.nectar.honeycomb.solr.db.util.SolrUtil;
 import com.nectar.thing.beans.ThingDataBean;
-
-
-import static com.nectar.asset.dtos.SolrConstants.TYPE;
-import static com.nectar.asset.dtos.SolrConstants.DATA_TIME;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 
 public class AssetServiceImpl {
 	
-	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+	public static final String SEARCH_TAG_IDS = "searchTagIds";
+	
+	private static Logger LOGGER = LoggerFactory.getLogger(AssetServiceImpl.class);
 	
 	@Value("${honeycomb.asset.latest.solr.collection}")
-	private String solrCollecton;
+	private static String solrCollecton;
 
 	@Value("${honeycomb.asset.solr.latest.fields}")
-	private String assetLatestsolrFields;
+	private static String assetLatestsolrFields;
 
-	@Value("${honeycomb.asset.solr.rowCounts}")
-	private Integer maxRows;
+
 	
 	
 	
-	public List<ThingDataBean> getAssetLatest(String path,String type) {
+	public static List<ThingDataBean> getAssetLatest(List<String> path,List<String> type) {
 		Map<String, String> queryFields = new HashMap<String, String>();
 		Map<String, String> filterFields = new HashMap<String, String>();
-
+		setQueryFields(SEARCH_TAG_IDS, path, queryFields);
+		setFilterFields(TYPE,type,filterFields);
 		SolrQuery solrQuery = new SolrQuery();
 
-		List<String> sources = new ArrayList<String>();
-		sources.add(type);
-
-		setQueryFields(TYPE, sources, queryFields);
-		solrQuery = setSolrQuery(queryFields, filterFields, null, null, null, maxRows, DATA_TIME, null,
-				assetLatestsolrFields);
-
+		solrQuery = setSolrQuery(queryFields, filterFields);
+		
 
 		return getAssetLatestResponse(solrQuery);
 	}
 	
+	private static Map<String, String> setFilterFields(String field, List<String> sources,
+			Map<String, String> filterFields) {
+
+		if (!CollectionUtils.isEmpty(sources)) {
+
+			filterFields.put(field, field + sources.stream().collect(Collectors.joining("\"\"", ":(\"", "\")")));
+		}
+		return filterFields;
+
+	}
 	
-	
-	private Map<String, String> setQueryFields(String field, List<String> sources, Map<String, String> queryFields) {
+	private static  Map<String, String> setQueryFields(String field, List<String> sources, Map<String, String> queryFields) {
 
 		if (!CollectionUtils.isEmpty(sources)) {
 
@@ -74,24 +72,12 @@ public class AssetServiceImpl {
 
 	}
 
-	private Map<String, String> setQueryFields(String field, String source, Map<String, String> queryFields) {
-
-		if (StringUtils.isNotEmpty(source)) {
-
-			queryFields.put(field, field + ":\"" + source + "\"");
-		}
-		return queryFields;
-
-	}
 	
-	
-	private SolrQuery setSolrQuery(Map<String, String> queryFields, Map<String, String> filterFields,
-			Map<String, String> paramFields, List<String> facetQuery, Integer start, Integer end, String sortField,
-			ORDER sortOrder, String solrFields) {
+	private static SolrQuery setSolrQuery(Map<String, String> queryFields, Map<String, String> filterFields) {
 
 		SolrQuery solrQuery = new SolrQuery();
 
-		solrQuery.setFields(solrFields);
+		solrQuery.setFields(assetLatestsolrFields);
 		if (null != queryFields) {
 
 			for (String key : queryFields.keySet()) {
@@ -105,36 +91,14 @@ public class AssetServiceImpl {
 				solrQuery.addFilterQuery(filterFields.get(key));
 			}
 		}
+		solrQuery.setStart(0);
+		solrQuery.setRows(Integer.MAX_VALUE);
 
-		if (null != facetQuery && facetQuery.size() > 0) {
-			for (String query : facetQuery) {
-				solrQuery.addFacetQuery(query);
-			}
-		}
-		if (null != start) {
-			solrQuery.setStart(start);
-		} else {
-			solrQuery.setStart(0);
-		}
-		if (null != end) {
-			solrQuery.setRows(end);
-		} else {
-			solrQuery.setRows(maxRows);
-		}
-		if (null != sortOrder) {
-			solrQuery.setSort(sortField, sortOrder);
-		} else {
-			solrQuery.setSort(sortField, ORDER.desc);
-		}
-		if (paramFields != null)
-			for (String key : paramFields.keySet()) {
-				solrQuery.setParam(key, paramFields.get(key));
-			}
 		return solrQuery;
 
 	}
 	
-	public List<ThingDataBean> getAssetLatestResponse(SolrQuery solrQuery) {
+	public static List<ThingDataBean> getAssetLatestResponse(SolrQuery solrQuery) {
 		LOGGER.debug("solr query :{}", solrQuery.toString());
 		QueryResponse response = SolrUtil.querySolr(solrCollecton, solrQuery);
 		List<ThingDataBean> assetLatest = null;
