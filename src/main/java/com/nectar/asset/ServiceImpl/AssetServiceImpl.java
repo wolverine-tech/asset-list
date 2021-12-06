@@ -99,16 +99,12 @@ public class AssetServiceImpl {
 	public List<ThingDataBean> getAssetLatestResponse(SolrQuery solrQuery) {
 		LOGGER.debug("solr query :{}", solrQuery.toString());
 		QueryResponse response = solrUtil.querySolr(solrCollecton, solrQuery);
-		List<ThingDataBean> assetLatest = null;
+		List<ThingDataBean> assetLatest = new ArrayList<>();
 		if (response.getResults().size() > 0) {
 			Gson gson = new Gson();
-			final SolrDocumentList documents = response.getResults();
-
 			String json = gson.toJson(response.getResults());
-		
-			List<ThingDataBean> assetFilterList = new ArrayList<ThingDataBean>();
 			try {
-				assetFilterList = new ObjectMapper().readValue(json, new TypeReference<List<ThingDataBean>>() {
+				assetLatest = new ObjectMapper().readValue(json, new TypeReference<List<ThingDataBean>>() {
 				});
 			} catch (Exception e) {
 				LOGGER.error("Error in mapping");
@@ -118,7 +114,7 @@ public class AssetServiceImpl {
 		else {
 			LOGGER.warn("No response forund from solr");
 		}
-		return assetFilterList;
+		return assetLatest;
 
 	}
 
