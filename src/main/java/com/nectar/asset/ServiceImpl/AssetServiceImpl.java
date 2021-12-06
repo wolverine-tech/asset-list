@@ -2,8 +2,6 @@ package com.nectar.asset.ServiceImpl;
 
 
 
-import static com.nectar.asset.dtos.SolrConstants.TYPE;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +11,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -21,24 +20,25 @@ import com.nectar.honeycomb.solr.db.util.SolrUtil;
 import com.nectar.thing.beans.ThingDataBean;
 
 @Service
-
 public class AssetServiceImpl {
 	
-	public static final String SEARCH_TAG_IDS = "searchTagIds";
+	public  final String SEARCH_TAG_IDS = "searchTagIds";
+	public  final String TYPE = "type";
 	
-	private static Logger LOGGER = LoggerFactory.getLogger(AssetServiceImpl.class);
+	private  Logger LOGGER = LoggerFactory.getLogger(AssetServiceImpl.class);
 	
 	@Value("${honeycomb.asset.latest.solr.collection}")
-	private static String solrCollecton;
+	private  String solrCollecton;
 
 	@Value("${honeycomb.asset.solr.latest.fields}")
-	private static String assetLatestsolrFields;
+	private  String assetLatestsolrFields;
 
 
+	@Autowired
+	SolrUtil solrUtil;
 	
 	
-	
-	public static List<ThingDataBean> getAssetLatest(List<String> path,List<String> type) {
+	public  List<ThingDataBean> getAssetLatest(List<String> path,List<String> type) {
 		Map<String, String> queryFields = new HashMap<String, String>();
 		Map<String, String> filterFields = new HashMap<String, String>();
 		setQueryFields(SEARCH_TAG_IDS, path, queryFields);
@@ -51,7 +51,7 @@ public class AssetServiceImpl {
 		return getAssetLatestResponse(solrQuery);
 	}
 	
-	private static Map<String, String> setFilterFields(String field, List<String> sources,
+	private  Map<String, String> setFilterFields(String field, List<String> sources,
 			Map<String, String> filterFields) {
 
 		if (!CollectionUtils.isEmpty(sources)) {
@@ -62,7 +62,7 @@ public class AssetServiceImpl {
 
 	}
 	
-	private static  Map<String, String> setQueryFields(String field, List<String> sources, Map<String, String> queryFields) {
+	private   Map<String, String> setQueryFields(String field, List<String> sources, Map<String, String> queryFields) {
 
 		if (!CollectionUtils.isEmpty(sources)) {
 
@@ -73,7 +73,7 @@ public class AssetServiceImpl {
 	}
 
 	
-	private static SolrQuery setSolrQuery(Map<String, String> queryFields, Map<String, String> filterFields) {
+	private  SolrQuery setSolrQuery(Map<String, String> queryFields, Map<String, String> filterFields) {
 
 		SolrQuery solrQuery = new SolrQuery();
 
@@ -98,9 +98,9 @@ public class AssetServiceImpl {
 
 	}
 	
-	public static List<ThingDataBean> getAssetLatestResponse(SolrQuery solrQuery) {
+	public  List<ThingDataBean> getAssetLatestResponse(SolrQuery solrQuery) {
 		LOGGER.debug("solr query :{}", solrQuery.toString());
-		QueryResponse response = SolrUtil.querySolr(solrCollecton, solrQuery);
+		QueryResponse response = solrUtil.querySolr(solrCollecton, solrQuery);
 		List<ThingDataBean> assetLatest = null;
 		if (response.getResults().size() > 0) {
 			try {
