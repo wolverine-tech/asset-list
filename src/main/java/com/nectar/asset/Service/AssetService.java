@@ -18,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.nectar.asset.dtos.AssetLatestDTO;
 import com.nectar.honeycomb.solr.db.util.SolrUtil;
 import com.nectar.thing.beans.ThingDataBean;
 
@@ -38,7 +39,7 @@ public class AssetService {
 	@Autowired
 	SolrUtil solrUtil;
 
-	public List<ThingDataBean> getAssetLatest(List<String> path, List<String> type) {
+	public List<AssetLatestDTO> getAssetLatest(List<String> path, List<String> type) {
 		Map<String, String> queryFields = new HashMap<String, String>();
 		Map<String, String> filterFields = new HashMap<String, String>();
 		setFilterFieldsAndQueryFields(SEARCH_TAG_IDS, path, queryFields);
@@ -86,15 +87,15 @@ public class AssetService {
 
 	}
 
-	public List<ThingDataBean> getAssetLatestResponse(SolrQuery solrQuery) {
+	public List<AssetLatestDTO> getAssetLatestResponse(SolrQuery solrQuery) {
 		LOGGER.debug("solr query :{}", solrQuery.toString());
 		QueryResponse response = solrUtil.querySolr(solrCollecton, solrQuery);
-		List<ThingDataBean> assetLatest = new ArrayList<>();
+		List<AssetLatestDTO> assetLatest = new ArrayList<>();
 		if (response.getResults().size() > 0) {
 			Gson gson = new Gson();
 			String json = gson.toJson(response.getResults());
 			try {
-				assetLatest = new ObjectMapper().readValue(json, new TypeReference<List<ThingDataBean>>() {
+				assetLatest = new ObjectMapper().readValue(json, new TypeReference<List<AssetLatestDTO>>() {
 				});
 			} catch (Exception e) {
 				LOGGER.error("Error in mapping");
